@@ -26,7 +26,7 @@ REQUIRED = [
     "torchaudio",
     "simclr",
     "torchaudio-augmentations",
-    "pytorch-lightning",
+    "pytorch-lightning==1.8.6",
     "soundfile",
     "scikit-learn",
     "matplotlib",
