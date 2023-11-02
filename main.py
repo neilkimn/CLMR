@@ -4,7 +4,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
-
+import uuid
 # Audio Augmentations
 from torchaudio_augmentations import (
     RandomApply,
@@ -25,18 +25,19 @@ from clmr.evaluation import evaluate
 from clmr.models import SampleCNN
 from clmr.modules import ContrastiveLearning, SupervisedLearning
 from clmr.utils import yaml_config_hook
-
+import sys
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="CLMR")
     parser = Trainer.add_argparse_args(parser)
+    config_file = sys.argv[1]
 
-    config = yaml_config_hook("./config/config.yaml")
+    config = yaml_config_hook(config_file)
     for k, v in config.items():
         parser.add_argument(f"--{k}", default=v, type=type(v))
 
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     pl.seed_everything(args.seed)
 
     # ------------
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     # dataloaders
     # ------------
     train_dataset = get_dataset(args.dataset, args.dataset_dir, subset="train")
-    valid_dataset = get_dataset(args.dataset, args.dataset_dir, subset="valid")
+    valid_dataset = get_dataset(args.dataset, args.dataset_dir, subset="test")
     contrastive_train_dataset = ContrastiveDataset(
         train_dataset,
         input_shape=(1, args.audio_length),
@@ -124,7 +125,7 @@ if __name__ == "__main__":
     else:
         module = ContrastiveLearning(args, encoder)
 
-    logger = TensorBoardLogger("runs", name="CLMRv2-{}".format(args.dataset))
+    logger = TensorBoardLogger("runs", name="CLMRv2-{}".format(args.dataset), version=uuid.uuid4())
     if args.checkpoint_path:
         module = module.load_from_checkpoint(
             args.checkpoint_path, encoder=encoder, output_dim=train_dataset.n_classes
@@ -149,7 +150,9 @@ if __name__ == "__main__":
             check_val_every_n_epoch=1,
             accelerator=args.accelerator,
         )
-        trainer.fit(module, train_loader, valid_loader)
+        #trainer.fit(module, train_loader, valid_loader)
+        #trainer.fit(module, train_loader)
+        trainer.validate(module, valid_loader)
 
     if args.supervised:
         test_dataset = get_dataset(args.dataset, args.dataset_dir, subset="test")

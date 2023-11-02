@@ -13,10 +13,8 @@ import torchaudio
 
 torchaudio.set_audio_backend("soundfile")
 from torch import Tensor, FloatTensor
-from torchaudio.datasets.utils import (
-    download_url,
-    extract_archive,
-)
+from torch.hub import download_url_to_file as download_url
+from torchtext.utils import extract_archive
 
 from clmr.datasets import Dataset
 
@@ -126,10 +124,10 @@ class MAGNATAGATUNE(Dataset):
                 if not os.path.exists(target_fp):
                     download_url(
                         url,
-                        self._path,
-                        filename=target_fn,
-                        hash_value=checksum,
-                        hash_type="md5",
+                        self._path + "/" + target_fn,
+                        #filename=target_fn,
+                        #hash_value=checksum,
+                        #hash_type="md5",
                     )
 
             if not os.path.exists(
