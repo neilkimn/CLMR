@@ -1,7 +1,7 @@
 # infra options
 gpus: 0
 accelerator: "cuda" # use ddp for gpus > 1. Also see PyTorch Lightning documentation on distributed training.
-workers: 4 # I recommend tuning this parameter for faster data augmentation processing
+workers: 2 # I recommend tuning this parameter for faster data augmentation processing
 dataset_dir: "/home/ubuntu/datasets/librispeech"
 prefetch_loader: 0
 
